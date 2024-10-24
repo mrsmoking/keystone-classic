@@ -22,7 +22,7 @@ function CloudinaryImagesThumbnail ({
 	// action button
 	const actionButton = (shouldRenderActionButton && !isQueued) ? (
 		<Button variant="link" color={isDeleted ? 'default' : 'cancel'} block onClick={toggleDelete}>
-			{isDeleted ? 'Undo' : 'Remove'}
+			{isDeleted ? 'Undo' : 'Remove 2'}
 		</Button>
 	) : null;
 
