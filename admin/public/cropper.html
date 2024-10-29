@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>AI Composer</title>
+  <link rel="stylesheet" href="/keystone/js/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/keystone/styles/keystone.min.css">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link  href="/keystone/js/lib/cropperjs/cropper.min.css" rel="stylesheet">
+  <script src="/keystone/js/lib/cropperjs/cropper.min.js"></script>
+  <style>
+      .container {
+          margin: 20px auto;
+          max-width: 640px;
+      }
+      img {
+          max-width: 100%;
+      }
+  </style>
+</head>
+<body>
+
+<div class="container" style="text-align: center">
+  <div>
+    <img id="image" src="" alt="Picture">
+  </div>
+  <br />
+  <button style="width: 200px" id="btnSave">save</button>
+</div>
+
+<script>
+
+	window.addEventListener('DOMContentLoaded', function () {
+		const urlParams = new URLSearchParams(window.location.search);
+		const imgUrl = urlParams.get('url');
+		const publicId = urlParams.get('public_id');
+		document.getElementById('image').setAttribute('src', imgUrl);
+
+		var image = document.querySelector('#image');
+		var minAspectRatio = 0.5;
+		var maxAspectRatio = 1.5;
+		var cropper = new Cropper(image, {
+			ready: function () {
+				var cropper = this.cropper;
+				var containerData = cropper.getContainerData();
+				var cropBoxData = cropper.getCropBoxData();
+				var aspectRatio = cropBoxData.width / cropBoxData.height;
+				var newCropBoxWidth;
+
+				if (aspectRatio < minAspectRatio || aspectRatio > maxAspectRatio) {
+					newCropBoxWidth = cropBoxData.height * ((minAspectRatio + maxAspectRatio) / 2);
+
+					cropper.setCropBoxData({
+						left: (containerData.width - newCropBoxWidth) / 2,
+						width: newCropBoxWidth
+					});
+				}
+			},
+
+			cropmove: function () {
+				var cropper = this.cropper;
+				var cropBoxData = cropper.getCropBoxData();
+				var aspectRatio = cropBoxData.width / cropBoxData.height;
+
+				if (aspectRatio < minAspectRatio) {
+					cropper.setCropBoxData({
+						width: cropBoxData.height * minAspectRatio
+					});
+				} else if (aspectRatio > maxAspectRatio) {
+					cropper.setCropBoxData({
+						width: cropBoxData.height * maxAspectRatio
+					});
+				}
+			},
+		});
+
+		const btnSave = document.querySelector('#btnSave');
+		btnSave.onclick = function () {
+			btnSave.innerText = 'uploading...';
+			canvas = cropper.getCroppedCanvas();
+			canvas.toBlob(function (blob) {
+				var formData = new FormData();
+				formData.append('image', blob);
+				formData.append('public_id', publicId);
+
+				fetch('/upload-image/?public_id=' + publicId, {
+					method: 'POST',
+					body: formData,
+				})
+				.then(response => response.json())
+				.then(data => {
+					btnSave.innerText = 'save';
+					if (data.error) {
+						console.error('Upload error:', data.error);
+					} else {
+						window.close();
+						window.opener.location = window.opener.location.href + '?clearCache=1';
+						console.log('Upload complete:', data.url);
+					}
+				})
+				.catch(error => console.error(error));
+			});
+		}
+	});
+</script>
+
+</body>
+</html>

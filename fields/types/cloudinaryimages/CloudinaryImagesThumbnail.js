@@ -10,7 +10,9 @@ function CloudinaryImagesThumbnail ({
 	isQueued,
 	openLightbox,
 	shouldRenderActionButton,
+	shouldRenderEditButton,
 	toggleDelete,
+	openEditor,
 	value,
 	...props
 }) {
@@ -22,9 +24,16 @@ function CloudinaryImagesThumbnail ({
 	// action button
 	const actionButton = (shouldRenderActionButton && !isQueued) ? (
 		<Button variant="link" color={isDeleted ? 'default' : 'cancel'} block onClick={toggleDelete}>
-			{isDeleted ? 'Undo' : 'Remove 2'}
+			{isDeleted ? 'Undo' : 'Remove'}
 		</Button>
 	) : null;
+
+  // edit button
+  const editButton = (shouldRenderEditButton) ? (
+    <Button variant="link" color={'default'} block onClick={openEditor}>
+      {'Edit'}
+    </Button>
+  ) : null;
 
 	const input = (!isQueued && !isDeleted && value) ? (
 		<input type="hidden" name={inputName} value={JSON.stringify(value)} />
@@ -49,6 +58,7 @@ function CloudinaryImagesThumbnail ({
 				<img src={imageSourceSmall} style={{ height: 90 }} />
 			</ImageThumbnail>
 			{actionButton}
+			{editButton}
 			{input}
 		</div>
 	);
@@ -62,7 +72,9 @@ CloudinaryImagesThumbnail.propTypes = {
 	isQueued: PropTypes.bool,
 	openLightbox: PropTypes.func.isRequired,
 	shouldRenderActionButton: PropTypes.bool,
+	shouldRenderEditButton: PropTypes.bool,
 	toggleDelete: PropTypes.func.isRequired,
+	openEditor: PropTypes.func.isRequired,
 };
 
 module.exports = CloudinaryImagesThumbnail;

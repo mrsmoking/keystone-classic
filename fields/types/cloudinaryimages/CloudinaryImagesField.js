@@ -46,19 +46,23 @@ module.exports = Field.create({
 	buildInitialState (props) {
 		const uploadFieldPath = `CloudinaryImages-${props.path}-${++uploadInc}`;
 		const thumbnails = props.value ? props.value.map((img, index) => {
+			const queryParams = new URLSearchParams(window.location.search);
+			const clearCache = queryParams.get('clearCache');
+			const rand = Math.floor(Math.random() * (10000 - 1000) + 1000);
+			const rndParam = clearCache ? '?rnd=' + rand : '';
 			return this.getThumbnail({
 				value: img,
 				imageSourceSmall: cloudinaryResize(img.public_id, {
 					...RESIZE_DEFAULTS,
 					height: 90,
 					secure: props.secure,
-				}),
+				}) + rndParam,
 				imageSourceLarge: cloudinaryResize(img.public_id, {
 					...RESIZE_DEFAULTS,
 					height: 600,
 					width: 900,
 					secure: props.secure,
-				}),
+				}) + rndParam,
 			}, index);
 		}) : [];
 		return { thumbnails, uploadFieldPath };
@@ -70,7 +74,9 @@ module.exports = Field.create({
 				inputName={this.getInputName(this.props.path)}
 				openLightbox={(e) => this.openLightbox(e, index)}
 				shouldRenderActionButton={this.shouldRenderField()}
+				shouldRenderEditButton={this.shouldRenderField()}
 				toggleDelete={this.removeImage.bind(this, index)}
+				openEditor={this.editImage.bind(this, index)}
 				{...props}
 			/>
 		);
@@ -122,6 +128,17 @@ module.exports = Field.create({
 		newThumbnails.splice(index, 1, cloneElement(target, {
 			isDeleted: !target.props.isDeleted,
 		}));
+
+		this.setState({ thumbnails: newThumbnails });
+	},
+	editImage (index) {
+		const newThumbnails = [...this.state.thumbnails];
+		const target = newThumbnails[index];
+		let params = [];
+		params.push('public_id=' + target.props.value.public_id);
+		params.push('url=' + encodeURIComponent(target.props.value.secure_url));
+
+		window.open('/keystone/cropper.html?' + params.join('&'), '_blank');
 
 		this.setState({ thumbnails: newThumbnails });
 	},
