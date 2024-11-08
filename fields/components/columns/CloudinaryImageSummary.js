@@ -1,6 +1,6 @@
 import React from 'react';
 
-const IMAGE_SIZE = 18;
+const IMAGE_SIZE = 50;
 
 const linkStyle = {
 	marginRight: 8,
