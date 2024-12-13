@@ -140,6 +140,11 @@ cloudinaryimages.prototype.addToSchema = function (schema) {
 			options = options || {};
 			options.secure = true;
 		}
+
+		if (!options) {
+			options = {};
+		}
+
 		options.format = options.format || img.format;
 		return img.public_id ? cloudinary.url(img.public_id, options) : '';
 	};
